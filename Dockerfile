@@ -33,6 +33,7 @@ RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 # Run Laravel safe bootstrap AFTER copy
 RUN php artisan package:discover || true
+RUN php artisan wayfinder:generate || true
 
 # Node (Vite build)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
