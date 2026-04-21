@@ -16,27 +16,31 @@ WORKDIR /var/www
 # Copy composer files first (better caching)
 COPY composer.json composer.lock ./
 
-RUN composer config --no-plugins allow-plugins true
-
-# Install PHP dependencies
+# Install dependencies WITHOUT running Laravel scripts (IMPORTANT FIX)
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
     --prefer-dist \
     --no-progress \
-    --ignore-platform-reqs
+    --no-scripts
 
-# Copy the rest of the project
+# Copy full project
 COPY . .
 
-# Node (Vite)
+# Ensure .env exists (important for package discovery)
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Run Laravel safe bootstrap AFTER copy
+RUN php artisan package:discover || true
+
+# Node (Vite build)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install \
     && npm run build
 
-# Permissions (Laravel required)
+# Permissions
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
