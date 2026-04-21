@@ -16,13 +16,16 @@ WORKDIR /var/www
 # Copy composer files first (better caching)
 COPY composer.json composer.lock ./
 
+RUN composer config --no-plugins allow-plugins true
+
 # Install PHP dependencies
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
     --prefer-dist \
-    --no-progress
+    --no-progress \
+    --ignore-platform-reqs
 
 # Copy the rest of the project
 COPY . .
